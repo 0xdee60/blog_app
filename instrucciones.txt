@@ -1,0 +1,340 @@
+#ubicado en la carpeta del proyecto
+#creacion y activacion de entorno virtual
+pip install virtualenv
+virtualenv env
+cd env
+cd Scripts
+activate
+
+#crear archivo .gitignore (buscar en github)
+
+#crear archivo requirements.txt en el cual se 
+#describiran todos nuestros paquetes
+pip install -r requirements.txt
+
+#crear proyecto core(primera app informacion de
+#nuestro proyecto)
+django-admin startproject core .
+
+#dar permiso a django a core
+core>settings.py>INSTALLED_APPS
+'core',
+
+#hacer migraciones
+python manage.py migrate
+
+#correr proyecto
+puthon manage.py runserver
+
+
+#crear nueva vista
+#crear archivo views.py
+#importar en view.py
+ from django.views.generic import View
+ form django.shortcuts import render, redirect
+#crear clase en view.py
+ class HomeView(View):
+    def get(self, request, *args, **kwargs):
+        context={
+
+        }
+        return render(request, 'index.html',context)
+
+#crear carpeta de templates
+#crear html en la carpeta de templates (index.html)
+#agregar a settings.py el paquete os
+ import os
+#agregar en settings.py>TEMPLATES>DIRS el dir templates
+  'DIRS': [os.path.join(BASE_DIR,'templates')],
+#importar view en url.py
+from .views import HomeView
+#agregar en url.py>urlpatterns 
+ path('',HomeView.as_view(),name="home")
+
+
+#proteger datos sencibles
+#agregar a requirements.txt django-environ==0.4.5
+#en settings.py se importa lo instalado
+ import environ
+#instanciamos una var tipo environ
+ env=environ.Env()
+ environ.Env.read_env()
+#crear nuevo file .env en core
+#cambiar el contenido de SECRET_KEY en settings.py al .env
+ borrar espacios, comillas e insecuredjango
+#igualar SECRET_KEY de settings.py
+ SECRET_KEY = os.environ.get('SECRET_KEY')
+#para proteger dEBUG se hace lo mismo
+
+
+#aplicacion de blog
+python manage.py startapp blog
+#ir a core y agregar en settings.py INSTALLED_APPS
+ 'blog',
+#Incluir modulo include del paquete django.urls
+ from django.urls import path, include
+#Agregar en urls en urlpatterns al final
+ path('blog/',include('blog.urls', namespace='blog'))
+#crear archivo urls.py en blog
+
+#Editar archivo urls.py
+#importar path del modulo django.urls y establecer
+#app_name y urlpatterns
+ from django.urls import path
+ app_name="blog"
+ urlpatterns = [
+
+ ]
+#con esto tenemos el archivo listo para ser editado con
+#las urls de la aplicacion
+
+#importar modulo View del paquete django.views.generic
+#blog - views.py enlistar las vistas del blog igual
+#que en core
+
+#editar url patterns de blog 
+ from django.urls import path
+ from .views import HomeView
+ app_name = "blog"
+ urlpatterns = [
+     path('',HomeView.as_view(), name='home')
+ ]
+ 
+#agregar url al index.html 'namespace:nombredefinidoenurls'
+ <a href="{% url 'blog:home' %}">Ir al blog</a>
+
+
+
+#crear nuevo post desde admin
+#modelos editar models.py del blog
+ class Post(models.Model):
+  title = models.CharField(max_length=255)
+  content=models.TextField()
+#borrar bases de datos de app y hacer migraciones
+#y actualizar migraciones en general
+ python manager.py makemigrations blog
+ python manager.py migrate
+#importar modelo creado a admin.py del blog
+ from .models import Post
+ admin.site.register(Post)
+
+#modificar como se muestra los post
+#editar models.py clase post metodo __str__
+ def __str__(self):
+  return self.title
+
+
+#formularios
+
+#CREATE
+#crear archivo forms.py en blog
+#impotar forms de paquete django en forms.py
+#importar el modelo creado para forms.py
+#crear clase de createform
+ class PostCreateForm(forms.ModelForm):
+  class Meta:
+   model = Post
+   fields = ('title','content')
+
+#llevar formulario a vista en views.py
+#importar el modelo creado para view.py
+#crear clase de la vista
+ class BlogCreateView(View):
+  def get(self,request,*arg,*kwargs):
+   context={
+   }
+   return render(request, 'blog_create.html',context)
+  def post(self,request,*arg,*kwargs):
+   context={
+   }
+   return render(request, 'blog_create.html',context)
+#ya tenemos la clase vista para editar
+#importar vista
+ from .forms import PostCreateForm
+#agregar vista a los urls.py del blog
+ path('create/',BlogCreateView.as_view(),name="create"
+
+#implementar hipervinculo para ir a crear blog
+ <a href="{% url 'blog:create' %}">Crear un Post</a>
+#renderizar form en get del views.py
+ def get(self,request,*args,**kwargs):
+  form = PostCreateForm()
+  context={
+   'form':form
+  }
+  return render(request,'blog_create.html',context
+#implementar campos blog_create.html
+ <form method="POST">
+  {%csrf_token%} #siempre tiene que ir
+  title{{form.title}}
+  <br>
+  content{{form.content}}
+  <button type="submit">Guardar</button>
+ </form>
+#implementar post de la views.py e importar el modelo
+ def post(self,request,*args,**kwargs):
+  if(request.method=="POST"):
+   form = PostCreateForm(request.POST)
+   if form.is_valid():
+    title = form.cleaned_data.get('title')
+    content = form.cleaned_data.get('content')
+    #crear el post
+    p, created = Post.objects.get_or_create(title=title,
+    content=content)
+    p.save()
+    return redirect('blog:home')
+
+  context={
+   'form':form
+  }
+  return render(request,'blog_create.html',context)
+
+#LISTAR
+#editar bloglistview agregando todos los posts
+#para luego enviarlos por el context
+ def get BlogListView(self, request, *args, **kwargs):
+  posts = Post.objects.all()
+  context={
+   'posts':posts
+  }
+  return render(request,'blog_create.html',context)
+
+#editar blog_list.html
+ <br>
+ {% for post in posts %}
+ {{post.title}}
+ <br>
+ {%endfor%}
+ <a href="{%url 'blog:create'%}">Crear nuevo post</a>
+#crear view details en views.py 
+#(todos los modelos tienen id)
+ class BlogDetailView(View):
+  def get BlogListView(self,request, *args, **kwargs):
+  
+  context={
+   
+  }
+  return render(request,'blog_detail.html',context)
+#agregar blogdetailview en urls 
+ path('<int:pk>',BlogDetailView.as_view(), name='detail'),
+#usamos pk en el get de BlogDetailView en views.py
+  def get BlogListView(self,request,pk, *args, **kwargs):
+  post = get_object_or_404(Post, pk=pk)
+  context={
+   'post' = post
+  }
+  return render(request,'blog_detail.html',context)
+#editar html listar para agregar <a> a details
+ <br>
+ {% for post in posts %}
+ <a href="{%url 'blog:detail' post.id%}"> {{post.title}} </a>
+ <br>
+ {%endfor%}
+ <a href="{%url 'blog:create'%}">Crear nuevo post</a>
+#editar html de details en templates
+ {{post.title}}
+ <br>
+ {{post.content}}
+
+#EDITAR
+#editar views
+#importar modulo UpdateView del pquete django.views.generic
+#importar modulo reverse_lazy del paquete django.urls
+#crear clase blogupdateview
+ class BlogUpdateView(UpdateView):
+  model = Post
+  fields = ['title','content']
+  template_name = 'blog_update.html'
+  def get_success_url(self):
+   pk = self.kwargs['pk']
+   return reverse_lazy('blog:details',kwargs={'pk':pk})
+#crear blog_update.html puedes usar el mismo de create
+#ya que son similares
+#agregar a urls.py
+ path('<int:pk>/update/,BlogUpdateView.as_view(),name='update')
+#crear <a> en listar 
+ <a href="{% url 'blog:update' post.id %}">Update</a>
+
+#BORRAR
+#importar modulo DeteleView del paquete django.views.generic
+#crear clase blogdeleteview
+ class BlogDeleteView(DeleteView):
+  model = post
+  template_name = 'blog_delete.html'
+  success_url = reverse_lazy('blog:home')
+#crear blog_delete.html en templates
+#copiar formulario create remplazando el contenido
+ Esta seguro que desea borrar el post ? 
+ <form method="POST">
+  {%csrf_token%} #siempre tiene que ir
+  {{form}}
+  <button type="submit">Borrar</button>
+ </form>
+#agregar view a urls.py
+ path('<int:pk>/delete/', BlogDeleteView.as_view(), name="delete")
+#agregar <a> en listar
+ <a href="{% url 'blog:delete' post.id %}">Borrar</a>
+
+
+#AGREGAR TAILDWINDCSS
+#agregar tailwinds a requirements.txt
+ django-tailwind==2.2.0
+#actualizar requerimientos consola:
+ pip install -r requirements.txt
+#agregar tailwind a nuestras apps en core>settings.py
+ INSTALLED_APPS
+  'tailwind',
+  'theme',
+#iniciar tailwind en nuestras apps
+ python manage.py tailwind init
+#nombre > theme
+#agregar tailwind a nuestras apps en core>settings.py
+ INSTALLED_APPS
+  'tailwind',
+  'theme',
+ TAILWIND_APP_NAME = 'theme'
+ INTERNAL_IPS = [
+  "127.0.0.1",
+ ]
+ NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+#instalar tailwind
+ python manage.py tailwind install
+#crear archivo base.html en nustros templates
+#crear estructura html en base.html agregando tailwind
+ {% load tailwind_tags %}
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     {% tailwind_css %}
+     <title>Document</title>
+ </head>
+ <body>
+    {% block content %} {% endblock content %}
+ </body>
+ </html>
+#en cada html que queramos usar tailwind
+#cabecera
+ {% extends 'base.html' %}
+ {% block content %}
+   //aca todo codigo html
+ {% endblock content %}
+ 
+#ejecucion tailwind
+#debes tener instalado nodejs
+#una terminal dentro de la carpeta del proyecto
+ python manage.py tailwind start
+#correr otra terminal con el servidor
+ python manage.py runserver
+
+
+
+
+
+
+
+
+
+
