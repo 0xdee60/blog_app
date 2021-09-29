@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!--Aca el codigo html o django-->
+    <div class="container">
+        {% for item in object_list%}
+            {{item.title}}
+        {% endfor %}
+    </div>
+{% endblock content %}

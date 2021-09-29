@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!--Aca el codigo html o django-->
+    <div class="container">
+        <h1>Vista para Eliminar</h1>
+        <h3>Seguro que desea eliminar el post? </h3>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit">Confirmar</button>
+        </form>
+    </div>
+{% endblock content %}
