@@ -11,7 +11,15 @@
    
 </head>
 <body>
-    
+    <nav class="navbar navbar-light bg-light" style="text-align: center;display: inline-block;">
+        <div class="container-fluid">
+            <a href="{% url 'list' %}" class="navbar-brand">BLOG MIGUEL</a>
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
     
     {% block content %}
         
@@ -25,3 +33,5 @@
  
 </body>
 </html>
+
+

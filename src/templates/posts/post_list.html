@@ -2,9 +2,44 @@
 
 {% block content %}
     <!--Aca el codigo html o django-->
+
+    
+<br>
+    
     <div class="container">
+    <a class="btn btn-primary" href="{% url 'create' %}">Crear nueva entrada</a>
+    <br/><br/>
+    <div class="row">
+    <br>
         {% for item in object_list%}
-            {{item.title}}
+        <div class="col-4">
+            <div class="card t-2" style="width: 18rem;">
+            <img src="{{item.thumbnail.url}}" width="200px" height="150px" class="card-img-top" alt="imagen">
+            <div class="card-body">
+                <h5 class="card-title">{{item.title}}</h5>
+                <p class="card-text">{{item.content|slice:":50"}}...</p>
+             
+                <hr>
+                
+                <a href="{{item.get_absolute_url}}" class="btn btn-primary">Detalles</a>
+                <a href="{{item.get_absolute_url_delete}}" class="btn btn-danger">Borrar</a>
+                <a href="{{item.get_absolute_url_update}}" class="btn btn-warning">Update</a>
+                <hr/>
+                
+                <p>
+                    <span>Vistas: {{item.get_view_count}}</span>
+                    <span>Comentarios: {{item.get_comment_count}}</span>
+                    <span>Likes: {{item.get_like_count}}</span>
+                </p>
+                <hr/>
+                <p style="text-align:center;">
+                    Publicado hace: {{item.publish_date|timesince}}
+                <p>
+            </div>
+            </div>
+            </div>
         {% endfor %}
+        <br>
+        </div>
     </div>
 {% endblock content %}

@@ -3,10 +3,60 @@
 {% block content %}
     <!--Aca el codigo html o django-->
     <div class="container">
+    <br/><br/>
+    <div class="row">
+    <br>
         
-            {{object.title}}
-            <br/>
-            {{object.content}}
-        
+        <div class="row">
+       
+            <div class="card t-2" style="width: 18rem;">
+            <img src="{{object.thumbnail.url}}" class="card-img-top" alt="imagen">
+            <div class="card-body">
+                <h5 class="card-title">{{object.title}}</h5>
+                <p class="card-text">
+                {{object.content}}
+                </p>
+             
+                <hr>
+                
+                <a href="{{object.get_absolute_url}}" class="btn btn-primary">Detalles</a>
+                <a href="{{object.get_absolute_url_delete}}" class="btn btn-danger">Borrar</a>
+                <a href="{{object.get_absolute_url_update}}" class="btn btn-warning">Update</a>
+                <hr/>
+                
+                <p>
+                    <span>Vistas: {{object.get_view_count}}</span>
+                    <span>Comentarios: {{object.get_comment_count}}</span>
+                    <span><a href="{{object.get_like_url}}">Likes: {{object.get_like_count}}</a></span>
+                </p>
+                <hr/>
+                <p style="text-align:center;">
+                    Publicado hace: {{object.publish_date|timesince}}
+                <p>
+                
+            </div>
+            </div>
+          </div>
+          
+        <br>
+        </div>
     </div>
+    <hr/>
+    <h4>Escribe un comentario...</h4>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button type="submit">Comentar</button>
+                </form>
+    <h4>Comentarios...</h4>
+    {% for comment in object.comments %}
+        <div>
+            <p>
+                {{comment.content}}
+                <br/>
+                <small>Hace: {{comment.timestamp|timesince}}</small>
+            </p>
+        </div>
+        <hr/>
+    {% endfor %}
 {% endblock content %}
