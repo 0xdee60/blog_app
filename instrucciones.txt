@@ -1,333 +1,356 @@
-#ubicado en la carpeta del proyecto
-#creacion y activacion de entorno virtual
+#crear carpeta
+#crear gitignore
+#crear requirements.txt
+django==3.2.7
+
+#instalar virtualenv
 pip install virtualenv
+
+#crear env
 virtualenv env
+
+#activar virtual env
 cd env
 cd Scripts
 activate
 
-#crear archivo .gitignore (buscar en github)
-
-#crear archivo requirements.txt en el cual se 
-#describiran todos nuestros paquetes
+#instalar requirements.txt
 pip install -r requirements.txt
 
-#crear proyecto core(primera app informacion de
-#nuestro proyecto)
-django-admin startproject core .
+#crear proyecto django
+django-admin startproject app_blog
 
-#dar permiso a django a core
-core>settings.py>INSTALLED_APPS
-'core',
+#cambiar nombre de la carpeta principal a src(opcional)
+#editar settings.py de nuestro proy para que acepte 
+#archivos agregando 
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATICFILES_DIRS=[os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
+
+#incluir los statics en urls.py de nuestro proy
+#importar librerias
+from django.conf import settings
+from django.conf.urls.static import static
+#agregar el final el DEBUG
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 #hacer migraciones
+python manage.py makemigrations
 python manage.py migrate
 
-#correr proyecto
-puthon manage.py runserver
+#crear el superusuario
+python manage.py createsuperuser
 
-
-#crear nueva vista
-#crear archivo views.py
-#importar en view.py
- from django.views.generic import View
- form django.shortcuts import render, redirect
-#crear clase en view.py
- class HomeView(View):
-    def get(self, request, *args, **kwargs):
-        context={
-
-        }
-        return render(request, 'index.html',context)
-
-#crear carpeta de templates
-#crear html en la carpeta de templates (index.html)
-#agregar a settings.py el paquete os
- import os
-#agregar en settings.py>TEMPLATES>DIRS el dir templates
-  'DIRS': [os.path.join(BASE_DIR,'templates')],
-#importar view en url.py
-from .views import HomeView
-#agregar en url.py>urlpatterns 
- path('',HomeView.as_view(),name="home")
-
-
-#proteger datos sencibles
-#agregar a requirements.txt django-environ==0.4.5
-#en settings.py se importa lo instalado
- import environ
-#instanciamos una var tipo environ
- env=environ.Env()
- environ.Env.read_env()
-#crear nuevo file .env en core
-#cambiar el contenido de SECRET_KEY en settings.py al .env
- borrar espacios, comillas e insecuredjango
-#igualar SECRET_KEY de settings.py
- SECRET_KEY = os.environ.get('SECRET_KEY')
-#para proteger dEBUG se hace lo mismo
-
-
-#aplicacion de blog
-python manage.py startapp blog
-#ir a core y agregar en settings.py INSTALLED_APPS
- 'blog',
-#Incluir modulo include del paquete django.urls
- from django.urls import path, include
-#Agregar en urls en urlpatterns al final
- path('blog/',include('blog.urls', namespace='blog'))
-#crear archivo urls.py en blog
-
-#Editar archivo urls.py
-#importar path del modulo django.urls y establecer
-#app_name y urlpatterns
- from django.urls import path
- app_name="blog"
- urlpatterns = [
-
- ]
-#con esto tenemos el archivo listo para ser editado con
-#las urls de la aplicacion
-
-#importar modulo View del paquete django.views.generic
-#blog - views.py enlistar las vistas del blog igual
-#que en core
-
-#editar url patterns de blog 
- from django.urls import path
- from .views import HomeView
- app_name = "blog"
- urlpatterns = [
-     path('',HomeView.as_view(), name='home')
- ]
- 
-#agregar url al index.html 'namespace:nombredefinidoenurls'
- <a href="{% url 'blog:home' %}">Ir al blog</a>
-
-
-
-#crear nuevo post desde admin
-#modelos editar models.py del blog
- class Post(models.Model):
-  title = models.CharField(max_length=255)
-  content=models.TextField()
-#borrar bases de datos de app y hacer migraciones
-#y actualizar migraciones en general
- python manager.py makemigrations blog
- python manager.py migrate
-#importar modelo creado a admin.py del blog
- from .models import Post
- admin.site.register(Post)
-
-#modificar como se muestra los post
-#editar models.py clase post metodo __str__
- def __str__(self):
-  return self.title
-
-
-#formularios
-
-#CREATE
-#crear archivo forms.py en blog
-#impotar forms de paquete django en forms.py
-#importar el modelo creado para forms.py
-#crear clase de createform
- class PostCreateForm(forms.ModelForm):
-  class Meta:
-   model = Post
-   fields = ('title','content')
-
-#llevar formulario a vista en views.py
-#importar el modelo creado para view.py
-#crear clase de la vista
- class BlogCreateView(View):
-  def get(self,request,*arg,*kwargs):
-   context={
-   }
-   return render(request, 'blog_create.html',context)
-  def post(self,request,*arg,*kwargs):
-   context={
-   }
-   return render(request, 'blog_create.html',context)
-#ya tenemos la clase vista para editar
-#importar vista
- from .forms import PostCreateForm
-#agregar vista a los urls.py del blog
- path('create/',BlogCreateView.as_view(),name="create"
-
-#implementar hipervinculo para ir a crear blog
- <a href="{% url 'blog:create' %}">Crear un Post</a>
-#renderizar form en get del views.py
- def get(self,request,*args,**kwargs):
-  form = PostCreateForm()
-  context={
-   'form':form
-  }
-  return render(request,'blog_create.html',context
-#implementar campos blog_create.html
- <form method="POST">
-  {%csrf_token%} #siempre tiene que ir
-  title{{form.title}}
-  <br>
-  content{{form.content}}
-  <button type="submit">Guardar</button>
- </form>
-#implementar post de la views.py e importar el modelo
- def post(self,request,*args,**kwargs):
-  if(request.method=="POST"):
-   form = PostCreateForm(request.POST)
-   if form.is_valid():
-    title = form.cleaned_data.get('title')
-    content = form.cleaned_data.get('content')
-    #crear el post
-    p, created = Post.objects.get_or_create(title=title,
-    content=content)
-    p.save()
-    return redirect('blog:home')
-
-  context={
-   'form':form
-  }
-  return render(request,'blog_create.html',context)
-
-#LISTAR
-#editar bloglistview agregando todos los posts
-#para luego enviarlos por el context
- def get BlogListView(self, request, *args, **kwargs):
-  posts = Post.objects.all()
-  context={
-   'posts':posts
-  }
-  return render(request,'blog_create.html',context)
-
-#editar blog_list.html
- <br>
- {% for post in posts %}
- {{post.title}}
- <br>
- {%endfor%}
- <a href="{%url 'blog:create'%}">Crear nuevo post</a>
-#crear view details en views.py 
-#(todos los modelos tienen id)
- class BlogDetailView(View):
-  def get BlogListView(self,request, *args, **kwargs):
-  
-  context={
-   
-  }
-  return render(request,'blog_detail.html',context)
-#agregar blogdetailview en urls 
- path('<int:pk>',BlogDetailView.as_view(), name='detail'),
-#usamos pk en el get de BlogDetailView en views.py
-  def get BlogListView(self,request,pk, *args, **kwargs):
-  post = get_object_or_404(Post, pk=pk)
-  context={
-   'post' = post
-  }
-  return render(request,'blog_detail.html',context)
-#editar html listar para agregar <a> a details
- <br>
- {% for post in posts %}
- <a href="{%url 'blog:detail' post.id%}"> {{post.title}} </a>
- <br>
- {%endfor%}
- <a href="{%url 'blog:create'%}">Crear nuevo post</a>
-#editar html de details en templates
- {{post.title}}
- <br>
- {{post.content}}
-
-#EDITAR
-#editar views
-#importar modulo UpdateView del pquete django.views.generic
-#importar modulo reverse_lazy del paquete django.urls
-#crear clase blogupdateview
- class BlogUpdateView(UpdateView):
-  model = Post
-  fields = ['title','content']
-  template_name = 'blog_update.html'
-  def get_success_url(self):
-   pk = self.kwargs['pk']
-   return reverse_lazy('blog:details',kwargs={'pk':pk})
-#crear blog_update.html puedes usar el mismo de create
-#ya que son similares
-#agregar a urls.py
- path('<int:pk>/update/,BlogUpdateView.as_view(),name='update')
-#crear <a> en listar 
- <a href="{% url 'blog:update' post.id %}">Update</a>
-
-#BORRAR
-#importar modulo DeteleView del paquete django.views.generic
-#crear clase blogdeleteview
- class BlogDeleteView(DeleteView):
-  model = post
-  template_name = 'blog_delete.html'
-  success_url = reverse_lazy('blog:home')
-#crear blog_delete.html en templates
-#copiar formulario create remplazando el contenido
- Esta seguro que desea borrar el post ? 
- <form method="POST">
-  {%csrf_token%} #siempre tiene que ir
-  {{form}}
-  <button type="submit">Borrar</button>
- </form>
-#agregar view a urls.py
- path('<int:pk>/delete/', BlogDeleteView.as_view(), name="delete")
-#agregar <a> en listar
- <a href="{% url 'blog:delete' post.id %}">Borrar</a>
-
-
-#AGREGAR TAILDWINDCSS
-#agregar tailwinds a requirements.txt
- django-tailwind==2.2.0
-#actualizar requerimientos consola:
- pip install -r requirements.txt
-#agregar tailwind a nuestras apps en core>settings.py
- INSTALLED_APPS
-  'tailwind',
-  'theme',
-#iniciar tailwind en nuestras apps
- python manage.py tailwind init
-#nombre > theme
-#agregar tailwind a nuestras apps en core>settings.py
- INSTALLED_APPS
-  'tailwind',
-  'theme',
- TAILWIND_APP_NAME = 'theme'
- INTERNAL_IPS = [
-  "127.0.0.1",
- ]
- NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
-
-#instalar tailwind
- python manage.py tailwind install
-#crear archivo base.html en nustros templates
-#crear estructura html en base.html agregando tailwind
- {% load tailwind_tags %}
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     {% tailwind_css %}
-     <title>Document</title>
- </head>
- <body>
-    {% block content %} {% endblock content %}
- </body>
- </html>
-#en cada html que queramos usar tailwind
-#cabecera
- {% extends 'base.html' %}
+#agregar bootstrap al proyecto 
+#agregar el directorio de templates en TEMPLATES, DIRS dentro
+#de settings.py de nuestro proyecto
+'DIRS': [os.path.join(BASE_DIR,'templates')],
+#crear carpeta templates dentro de la carpeta src
+#crear archivo dentro de templates que sera la base
+#con el nombre de base.html
+#crear estructura html:5 en el archivo base.html
+#importamos el css y js de bootstrap de su pag
+    <!-- import bootstrap css en head debajo de title-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- Import bootstrap js en body -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+#definir bloque en el que estaran nuestros html, en base.html
+#en body antes del js de bootstrap
  {% block content %}
-   //aca todo codigo html
+        
  {% endblock content %}
- 
-#ejecucion tailwind
-#debes tener instalado nodejs
-#una terminal dentro de la carpeta del proyecto
- python manage.py tailwind start
-#correr otra terminal con el servidor
- python manage.py runserver
+
+#crear aplicacion de post (publicaciones del blog)
+python manage.py startapp posts
+#agregar app posts a settings.py en INSTALLED_APPS
+'posts',
+#definir modelos en nuestra app posts
+class Post(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    thumbnail = models.ImageField()
+    publish_date = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+    #autor = models.ForeignKey()
+
+    def __str__(self):
+        return self.title
+class Comment(models.Model):
+    #user = models.ForeignKey()
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    timespan = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+
+    def __str__(self) :
+        return self.user.username
+
+#definir cuantas vistas tendra el modelo mediante una clase
+#en el archivo models.py de nuestra app
+class PostView(models.Model):
+    #user = models.ForeignKey()
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    timestamp = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username
+#hacer migraciones
+python manage.py makemigrations
+python manage.py migrate
+
+#agregamos modelos a la vista de admin en admin.py de nuestra app
+from .models import Post, PostView, Like, Comment
+admin.site.register(Post)
+admin.site.register(PostView)
+admin.site.register(Comment)
+admin.site.register(Like)
+
+#CREACION DE USUARIO
+#instalar python allauth o agregar a requirements.txt
+pip install django-allauth
+#agregar authentication_backends en settings.py del proyecto
+#al final
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+
+    'allauth.account.auth_backends.AuthenticationBackend',
+    
+]
+#agregar tambien los INSTALLED_APPS estas apps antes de nuetra app
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+#agregar luego de los backends en settings.py de nuestro proy 
+SITE_ID = 1
+#modificar urls.py del proy agregando a urlspatterns
+#ademas importar include de django.urls
+path('accounts/', include('allauth.urls')),
+#correr migraciones
+python manage.py makemigrations
+python manage.py migrate
+#configurar nuestro usuario de autentificaicon
+#en nuesta app creamos el modelo importando AbstractUsers
+from django.contrib.auth.models import AbstractUser
+class User(AbstractUser):
+    pass
+
+    def __str__(self) -> str:
+        return self.username
+#especificar donde esta nuestro modelo de usuario
+#en settings.py de nuestro proy
+AUTH_USER_MODEL = 'posts.User'
+#borrar carpeta migrations y archivo bd para volver a migrar
+python manage.py makemigrations posts
+python manage.py migrate
+
+#volver a crear superusuario 
+python manage.py createsuperuser
+#agregar modelo de User en admin.py de nuestra app
+#no olvides importar 
+from .models import Post, PostView, Like, Comment, User
+admin.site.register(User)
+
+
+#VISTAS
+#Se agregan las clases de las vistas en views.py de nuestra app
+#importar las acciones que nesesitaremos usar y los modelos
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from .models import Comment,Post,Like,PostView
+class PostListView(ListView): #recive como parametro lo que haremos
+	model = Post
+class PostListView(ListView): 
+	model = Post
+class PostDetailView(ListView): 
+	model = Post
+class PostCreateView(ListView): 
+	model = Post
+class PostUpdateView(ListView): 
+	model = Post
+class PostDeleteView(ListView): 
+	model = Post
+	seccess_url = '/'
+#agregar en los urls.py de nuestro proy
+from posts.views import (
+	PostListView,
+	PostDetailView,
+	PostCreateView,
+	PostUpdateView
+	PostDeleteView
+)
+#agregar urlspatterns en urls.py de nuestro proy
+path('',PostListView.as_view(),name='list')
+path('create/',PostCreateView.as_view(),name='create')
+path('<slug>/',PostDetailView.as_view(),name='detail')
+path('<slug>/update/',PostUpdateView.as_view(),name='update')
+path('<slug>/delete/',PostDeleteView.as_view(),name='delete')
+#crear carpeta posts dentro de templates
+#crear .htmls segun lo declarado dentro de templates/posts
+#ej: post_list.html, post_create.html,etc
+#heredar el formato definido en base.html
+#ej: list.html
+{% extends "base.html" %}
+{% block content %}
+    <!--Aca el codigo html o django-->
+    <div class="container">
+        {% for item in object_list%}
+            {{item.title}}
+        {% endfor %}
+    </div>
+{% endblock content %}
+#para que funcione los slugs tenemos que modificar el modelo 
+#en este caso dentro de Post
+class Post(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    thumbnail = models.ImageField()
+    publish_date = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+    autor = models.ForeignKey(User,on_delete=models.CASCADE)
+    slug = models.SlugField()
+
+    def __str__(self):
+        return self.title
+#volver a hacer migraciones
+python manage.py makemigrations posts
+  #si sale seleccionar dale a one-off 1 y anotar luego
+  #"fix-me"
+python manage.py migrate
+#para poder usar update tenemos que especificar 
+#los fields en la clase vista de update 
+#que esta en views.py de nuestra app con los campos que
+#se pueden actualizar
+class PostUpdateView(ListView):
+    model = Post
+    fields = (
+        'title',
+        'content',
+        'thumbnail',
+        'author',
+        'slug',
+    )
+class PostCreateView(CreateView):
+    model = Post
+    fields = (
+        'title',
+        'content',
+        'thumbnail',
+        'author',
+        'slug',
+    )
+#agregamos el template que nos pide al correr el servidor
+#en el caso de update post_form
+#probar urls para ver los html faltantes
+#si pide post_form.html no ovlidar el enctype
+
+
+#FORMULARIOS
+#crear un archivo llamado forms.py dentro de nuestra app
+#importar forms de django y modelos
+from django import forms
+from .models import Post
+class PostForm(forms.ModelForm):
+	class Meta:
+		model = Post
+		fields = ('__all__')
+#modificar las vistas en views.py de nuestra app
+#importando el formulario recien creado sin fields
+from .forms import PostForm
+class PostCreateView(CreateView):
+    form_class = PostForm #agregar var con el formulario
+    model = Post
+    #tenemos que indicar a donde ir cuando de success
+    success_url = '/'
+    #tenemos que obtener los datos ingresados
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'view_type':'create'
+        })
+#para realizar un href
+#debe agregaral modelo la funcion get_absolute_url
+from django.shortcuts import reverse
+def get_absolute_url(self):
+    return reverse("detail",kwargs={
+        'slug':self.slug
+    }
+#slicing en template 
+{{ some_list|slice:":2" }}
+
+#dar funcionalidad a boton de megusta
+#en views.py del app importar get_object_or_404 de django.shortcuts
+from django.shortcuts import render, get_object_or_404
+def line(request, slug):
+    post = get_object_or_404(Post, slug=slug)
+    like_qs = Like.objects.filter(user = request.user, post = post)
+    if like_qs.exists():
+        like_qs[0].delete()
+        return redirect('detail',slug=slug)
+    Like.objects.create(user=request.user, post=post)
+    return redirect('detail',slug=slug)
+#importar funcion a urls.py del proy
+from posts.views import (
+    PostListView,
+    PostDeleteView,
+    PostDetailView,
+    PostUpdateView,
+    PostCreateView,
+    Agregar_like
+)
+#agregar tmbien en urls patterns
+ path('<slug>/Agregar_like',Agregar_like,name='like'),
+#crear en modelo.py del app obtener un url ddespues de like
+#dentro del modelo Post
+    def get_like_url(self):
+        return reverse("like", kwargs={
+            'slug':self.slug
+        })
+#llamar dentro  del href
+<span><a href="{{object.get_like_url}}">Likes: {{object.get_like_count}}</a></span>
+
+#contar visitas en sitio editar views.py del app dentro
+#del view que usaremos para contar definimos el metodo
+def get_object(self, **kwargs):
+        object = super().get_object(**kwargs)
+        if self.request.user.is_authenticated:
+            PostView.objects.get_or_create(user = self.request.user,post = object)
+        return object
+
+#Cometar post
+#indicar que campos del formulario se desea editar dentro
+#de forms.py de nuestra app
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields=('content',)
+#agregamos la funcion post (request post no publicacion)
+#en la vista que vayamos a comentar viws.py -> details
+def post(self,*args,**kwargs):
+        form = CommentForm(self.request.POST)
+        if form.is_valid():
+            post = self.get_object()
+            comment = form.instance
+            comment.user = self.request.user
+            comment.post = post
+            comment.save()
+            return redirect("detail", slug=post.slug)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
