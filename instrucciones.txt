@@ -339,8 +339,32 @@ def post(self,*args,**kwargs):
             comment.post = post
             comment.save()
             return redirect("detail", slug=post.slug)
+#obtenemos el form para mostrarlo en la view
+def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'form' : CommentForm()
+        })
+        return context
 
-
+#agregamos el formulario y la muetra de comments al template
+  <h4>Escribe un comentario...</h4>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button type="submit">Comentar</button>
+                </form>
+    <h4>Comentarios...</h4>
+    {% for comment in object.comments %}
+        <div>
+            <p>
+                {{comment.content}}
+                <br/>
+                <small>Hace: {{comment.timestamp|timesince}}</small>
+            </p>
+        </div>
+        <hr/>
+    {% endfor %}
 
 
 
